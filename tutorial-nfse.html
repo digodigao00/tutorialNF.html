@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Tutorial NFS-e | Emissão de Nota Fiscal de Serviços</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --black: #0d0d0d;
+      --white: #f5f4f0;
+      --red: #d62828;
+      --gray-100: #f0efeb;
+      --gray-200: #e2e0db;
+      --gray-400: #9a9790;
+      --gray-600: #5a5750;
+      --card: #ffffff;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--white);
+      color: var(--black);
+      line-height: 1.65;
+      font-size: 16px;
+      overflow-x: hidden;
+    }
+
+    /* HERO */
+    .hero {
+      background: var(--black);
+      color: var(--white);
+      padding: 80px 40px 72px;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute; top: -100px; right: -100px;
+      width: 500px; height: 500px; border-radius: 50%;
+      background: radial-gradient(circle, rgba(214,40,40,.2) 0%, transparent 65%);
+      pointer-events: none;
+    }
+    .hero::after {
+      content: 'NFS-e';
+      position: absolute; bottom: -30px; right: 24px;
+      font-family: 'Syne', sans-serif;
+      font-size: 150px; font-weight: 800;
+      color: rgba(255,255,255,.04);
+      line-height: 1; pointer-events: none; user-select: none;
+    }
+    .hero-inner { max-width: 760px; margin: 0 auto; position: relative; z-index: 1; }
+    .hero-badge {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: rgba(214,40,40,.15);
+      border: 1px solid rgba(214,40,40,.4);
+      color: #ff8080;
+      font-size: 11px; font-weight: 500;
+      letter-spacing: .12em; text-transform: uppercase;
+      padding: 5px 14px; border-radius: 100px; margin-bottom: 28px;
+    }
+    .hero-badge span { width: 6px; height: 6px; border-radius: 50%; background: #ff8080; display: block; }
+    .hero h1 {
+      font-family: 'Syne', sans-serif;
+      font-size: clamp(36px, 6vw, 64px);
+      font-weight: 800; line-height: 1.05; letter-spacing: -.025em;
+      margin-bottom: 20px;
+    }
+    .hero h1 em { color: var(--red); font-style: normal; }
+    .hero p { font-size: 17px; color: rgba(245,244,240,.6); font-weight: 300; max-width: 520px; line-height: 1.75; }
+    .hero-meta {
+      display: flex; gap: 32px; flex-wrap: wrap;
+      margin-top: 40px; padding-top: 32px;
+      border-top: 1px solid rgba(255,255,255,.08);
+    }
+    .hero-meta-item { display: flex; flex-direction: column; gap: 4px; }
+    .hero-meta-item .label { font-size: 10px; letter-spacing: .1em; text-transform: uppercase; color: rgba(245,244,240,.38); font-weight: 500; }
+    .hero-meta-item .value { font-family: 'Syne', sans-serif; font-size: 14px; font-weight: 600; color: var(--white); }
+
+    /* STICKY NAV */
+    .nav-tabs {
+      position: sticky; top: 0; z-index: 100;
+      background: rgba(245,244,240,.94);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--gray-200);
+      padding: 0 40px;
+    }
+    .nav-tabs-inner {
+      max-width: 760px; margin: 0 auto;
+      display: flex; overflow-x: auto; scrollbar-width: none;
+    }
+    .nav-tabs-inner::-webkit-scrollbar { display: none; }
+    .nav-tab {
+      flex-shrink: 0; padding: 16px 18px;
+      font-size: 13px; font-weight: 500; color: var(--gray-600);
+      text-decoration: none;
+      border-bottom: 2px solid transparent;
+      transition: color .2s, border-color .2s;
+      white-space: nowrap;
+    }
+    .nav-tab:hover { color: var(--black); }
+    .nav-tab.active { color: var(--red); border-bottom-color: var(--red); }
+
+    /* MAIN */
+    .content { max-width: 760px; margin: 0 auto; padding: 64px 40px 100px; }
+
+    /* SECTION */
+    .section { margin-bottom: 80px; }
+    .section-label {
+      font-size: 10px; font-weight: 500; letter-spacing: .14em;
+      text-transform: uppercase; color: var(--red);
+      display: flex; align-items: center; gap: 8px; margin-bottom: 10px;
+    }
+    .section-label::before { content: ''; width: 20px; height: 1px; background: var(--red); }
+    .section h2 {
+      font-family: 'Syne', sans-serif;
+      font-size: clamp(24px, 4vw, 34px);
+      font-weight: 700; line-height: 1.15; letter-spacing: -.02em;
+    }
+    .section-desc { margin-top: 12px; font-size: 15px; color: var(--gray-600); font-weight: 300; line-height: 1.75; }
+
+    /* STEP CARDS */
+    .steps { display: flex; flex-direction: column; gap: 16px; margin-top: 32px; }
+    .step-card {
+      background: var(--card);
+      border: 1px solid var(--gray-200);
+      border-radius: 16px; padding: 26px 28px 26px 24px;
+      display: flex; gap: 20px; align-items: flex-start;
+      position: relative; overflow: hidden;
+      transition: border-color .2s, box-shadow .2s;
+    }
+    .step-card::before {
+      content: ''; position: absolute; left: 0; top: 0; bottom: 0;
+      width: 3px; background: var(--gray-200); transition: background .25s;
+    }
+    .step-card:hover { border-color: var(--gray-400); box-shadow: 0 6px 28px rgba(0,0,0,.07); }
+    .step-card:hover::before { background: var(--red); }
+    .step-num {
+      font-family: 'Syne', sans-serif; font-size: 13px; font-weight: 700;
+      color: var(--red); background: rgba(214,40,40,.08);
+      border-radius: 8px; width: 34px; height: 34px;
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+    .step-body h3 { font-family: 'Syne', sans-serif; font-size: 15px; font-weight: 600; margin-bottom: 5px; }
+    .step-body p { font-size: 14px; color: var(--gray-600); line-height: 1.65; }
+    .step-body code {
+      display: inline-block; background: rgba(214,40,40,.08); color: var(--red);
+      font-family: 'Courier New', monospace; font-size: 12px;
+      padding: 2px 8px; border-radius: 5px; margin-top: 6px;
+    }
+
+    /* ALERT */
+    .alert {
+      border-radius: 12px; padding: 18px 22px;
+      display: flex; gap: 14px; align-items: flex-start; margin: 20px 0;
+    }
+    .alert-warning { background: #fff8e6; border: 1px solid #f5d87a; }
+    .alert-info    { background: #eef4ff; border: 1px solid #b8d0f8; }
+    .alert-danger  { background: #fff2f2; border: 1px solid #f5b8b8; }
+    .alert-icon { font-size: 20px; flex-shrink: 0; line-height: 1.5; }
+    .alert-content { font-size: 14px; line-height: 1.65; }
+    .alert-content strong { display: block; font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: .06em; margin-bottom: 4px; }
+
+    /* INFO GRID */
+    .info-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(195px, 1fr)); gap: 14px; margin-top: 28px; }
+    .info-card {
+      background: var(--gray-100); border: 1px solid var(--gray-200);
+      border-radius: 12px; padding: 20px;
+    }
+    .info-card .icon { font-size: 26px; margin-bottom: 12px; }
+    .info-card h4 { font-family: 'Syne', sans-serif; font-size: 14px; font-weight: 600; margin-bottom: 4px; }
+    .info-card p { font-size: 13px; color: var(--gray-600); line-height: 1.55; }
+
+    /* DIVIDER */
+    hr.divider { border: none; border-top: 1px solid var(--gray-200); margin: 56px 0; }
+
+    /* MOBILE STEPS */
+    .mobile-steps { display: flex; flex-direction: column; gap: 12px; margin-top: 32px; }
+    .mobile-step {
+      display: flex; gap: 16px; align-items: flex-start;
+      padding: 18px 20px; background: var(--gray-100);
+      border: 1px solid var(--gray-200); border-radius: 12px;
+    }
+    .mobile-step-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--red); flex-shrink: 0; margin-top: 6px; }
+    .mobile-step p { font-size: 14px; color: var(--gray-600); line-height: 1.65; }
+    .mobile-step p strong { color: var(--black); font-weight: 500; }
+
+    /* FAQ */
+    details.faq-item {
+      background: var(--card); border: 1px solid var(--gray-200);
+      border-radius: 12px; overflow: hidden; margin-bottom: 10px;
+    }
+    details.faq-item summary {
+      list-style: none; padding: 18px 24px;
+      display: flex; align-items: center; justify-content: space-between;
+      font-family: 'Syne', sans-serif; font-size: 14px; font-weight: 600;
+      cursor: pointer; user-select: none;
+      transition: background .15s;
+    }
+    details.faq-item summary::-webkit-details-marker { display: none; }
+    details.faq-item summary:hover { background: var(--gray-100); }
+    details.faq-item summary::after { content: '+'; font-size: 20px; font-weight: 300; color: var(--red); flex-shrink: 0; }
+    details.faq-item[open] summary::after { content: '\2212'; }
+    .faq-body { padding: 0 24px 20px; font-size: 14px; color: var(--gray-600); line-height: 1.7; }
+
+    /* FOOTER */
+    footer {
+      background: var(--black); color: rgba(245,244,240,.5);
+      text-align: center; padding: 48px 40px;
+      font-size: 13px; line-height: 1.7;
+    }
+    footer strong { color: var(--red); }
+    .footer-logo {
+      font-family: 'Syne', sans-serif;
+      font-size: 28px; font-weight: 800;
+      color: var(--white); letter-spacing: -.02em; margin-bottom: 8px;
+    }
+
+    /* PROGRESS BAR */
+    #progress-bar {
+      position: fixed; top: 0; left: 0; height: 3px;
+      background: var(--red); width: 0%; z-index: 9999;
+      transition: width .1s linear;
+    }
+
+    /* ANIMATIONS */
+    .fade-in { opacity: 0; transform: translateY(20px); transition: opacity .5s ease, transform .5s ease; }
+    .fade-in.visible { opacity: 1; transform: none; }
+
+    /* RESPONSIVE */
+    @media (max-width: 600px) {
+      .hero { padding: 56px 24px 56px; }
+      .hero::after { font-size: 80px; }
+      .nav-tabs { padding: 0 20px; }
+      .content { padding: 48px 24px 80px; }
+      .step-card { padding: 20px; }
+    }
+  </style>
+</head>
+<body>
+
+<div id="progress-bar"></div>
+
+<!-- HERO -->
+<header class="hero">
+  <div class="hero-inner">
+    <div class="hero-badge"><span></span> Emissor Web &amp; Mobile</div>
+    <h1>Emissão de<br><em>NFS-e</em><br>Passo a Passo</h1>
+    <p>Guia completo para configurar e emitir sua Nota Fiscal de Serviços Eletrônica pelo Portal Nacional — versão Web e APP Mobile.</p>
+    <div class="hero-meta">
+      <div class="hero-meta-item">
+        <span class="label">Plataforma</span>
+        <span class="value">Portal NFS-e Nacional</span>
+      </div>
+      <div class="hero-meta-item">
+        <span class="label">Indicado para</span>
+        <span class="value">MEI e Prestadores</span>
+      </div>
+      <div class="hero-meta-item">
+        <span class="label">Modalidades</span>
+        <span class="value">Web + APP Mobile</span>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- NAV -->
+<nav class="nav-tabs">
+  <div class="nav-tabs-inner">
+    <a href="#acesso"     class="nav-tab active">1. Primeiro Acesso</a>
+    <a href="#config"     class="nav-tab">2. Configurações</a>
+    <a href="#favoritos"  class="nav-tab">3. Serv. Favoritos</a>
+    <a href="#emissao"    class="nav-tab">4. Emitindo a NF</a>
+    <a href="#mobile"     class="nav-tab">5. Pelo Celular</a>
+    <a href="#faq"        class="nav-tab">Dúvidas</a>
+  </div>
+</nav>
+
+<main class="content">
+
+  <!-- SEÇÃO 1 -->
+  <section class="section fade-in" id="acesso">
+    <div class="section-label">Etapa 01</div>
+    <h2>Primeiro Acesso</h2>
+    <p class="section-desc">Para utilizar o Portal Nacional de Emissão de NFS-e (Web ou APP), você precisa primeiro realizar o cadastro ou login pelo Emissor Web.</p>
+
+    <div class="alert alert-warning">
+      <div class="alert-icon">⚠️</div>
+      <div class="alert-content">
+        <strong>Importante</strong>
+        Para usar o APP mobile é obrigatório realizar a configuração inicial pelo Emissor Web primeiro.
+      </div>
+    </div>
+
+    <div class="info-grid">
+      <div class="info-card">
+        <div class="icon">🔑</div>
+        <h4>Usuário e Senha</h4>
+        <p>Cadastre-se diretamente pelo portal informando CPF/CNPJ e criando uma senha de acesso.</p>
+      </div>
+      <div class="info-card">
+        <div class="icon">📜</div>
+        <h4>Certificado Digital</h4>
+        <p>Acesse com seu certificado digital já emitido em nome da empresa.</p>
+      </div>
+      <div class="info-card">
+        <div class="icon">🏛️</div>
+        <h4>Conta gov.br</h4>
+        <p>Exclusivo para MEI. Requer selos <strong>Prata ou Ouro</strong> no representante legal.</p>
+      </div>
+    </div>
+
+    <div class="alert alert-info">
+      <div class="alert-icon">ℹ️</div>
+      <div class="alert-content">
+        <strong>MEI: saiba mais</strong>
+        Após login com CPF via gov.br, o emissor abrirá automaticamente para o CNPJ MEI vinculado.
+      </div>
+    </div>
+  </section>
+
+  <hr class="divider">
+
+  <!-- SEÇÃO 2 -->
+  <section class="section fade-in" id="config">
+    <div class="section-label">Etapa 02</div>
+    <h2>Configurações Iniciais</h2>
+    <p class="section-desc">No primeiro acesso é obrigatório configurar seus dados. Clique nos ícones de engrenagem ⚙️ ou estrela ☆ na barra superior do portal.</p>
+
+    <div class="steps">
+      <div class="step-card">
+        <div class="step-num">01</div>
+        <div class="step-body">
+          <h3>Preencha e-mail e telefone</h3>
+          <p>Em <em>Informações Pessoais</em>, informe o e-mail e telefone que serão exibidos na NFS-e e no DANFSe. Não precisam ser iguais aos cadastrados no município.</p>
+        </div>
+      </div>
+      <div class="step-card">
+        <div class="step-num">02</div>
+        <div class="step-body">
+          <h3>Valor Aproximado dos Tributos</h3>
+          <p>Selecione a <strong>terceira opção</strong>: "Não informar nenhum valor estimado para os Tributos (Decreto 8.264/2014)".</p>
+        </div>
+      </div>
+      <div class="step-card">
+        <div class="step-num">03</div>
+        <div class="step-body">
+          <h3>Salve as configurações</h3>
+          <p>Após preencher, salve. Pronto — você já pode emitir NFS-e pelo portal!</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <hr class="divider">
+
+  <!-- SEÇÃO 3 -->
+  <section class="section fade-in" id="favoritos">
+    <div class="section-label">Etapa 03</div>
+    <h2>Cadastro de Serviços Favoritos</h2>
+    <p class="section-desc">Obrigatório para quem vai utilizar o APP mobile. Acesse pelo ícone de estrela ☆ no menu superior do portal.</p>
+
+    <div class="steps">
+      <div class="step-card">
+        <div class="step-num">01</div>
+        <div class="step-body">
+          <h3>Clique em "Novo Serviço Favorito"</h3>
+          <p>Na tela de Serviços Favoritos, clique no botão <strong>+ Novo Serviço Favorito</strong>.</p>
+        </div>
+      </div>
+      <div class="step-card">
+        <div class="step-num">02</div>
+        <div class="step-body">
+          <h3>Defina um apelido</h3>
+          <p>O apelido é o termo que identificará este serviço dentro do sistema. Ex: <em>"instrutoria"</em>.</p>
+        </div>
+      </div>
+      <div class="step-card">
+        <div class="step-num">03</div>
+        <div class="step-body">
+          <h3>Selecione o Código de Tributação Nacional</h3>
+          <p>Selecione a atividade correspondente:</p>
+          <code>02.01.01 — Serviços de pesquisas e desenvolvimento de qualquer natureza</code>
+        </div>
+      </div>
+      <div class="step-card">
+        <div class="step-num">04</div>
+        <div class="step-body">
+          <h3>Salve o serviço favorito</h3>
+          <p>Clique em salvar. O serviço estará disponível no APP mobile para seleção rápida na hora de emitir.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <hr class="divider">
+
+  <!-- SEÇÃO 4 -->
+  <section class="section fade-in" id="emissao">
+    <div class="section-label">Etapa 04</div>
+    <h2>Emitindo a Nota Fiscal</h2>
+    <p class="section-desc">Para emitir pelo Emissor Web, clique no ícone de documento na barra superior e escolha <strong>Emissão Completa</strong>.</p>
+
+    <div class="alert alert-info">
+      <div class="alert-icon">📋</div>
+      <div class="alert-content">
+        <strong>O que é Emissão Completa?</strong>
+        Obrigatória para exportação de serviços e casos em que o ISSQN é devido no local do tomador.
+      </div>
+    </div>
+
+    <div class="steps">
+      <div class="step-card">
+        <div class="step-num">01</div>
+        <div class="step-body">
+          <h3>Aba Pessoas — Dados do Emitente</h3>
+          <p>Preencha a <strong>Data de Competência</strong> com o mês anterior. Selecione o Município e a Inscrição Municipal. Os dados do CNPJ MEI serão preenchidos automaticamente.</p>
+        </div>
+      </div>
+      <div class="step-card">
+        <div class="step-num">02</div>
+        <div class="step-body">
+          <h3>Tomador do Serviço</h3>
+          <p>Preencha os dados de quem está recebendo o serviço — o <strong>Zukkin</strong>. Selecione "Brasil" e informe o CNPJ para preenchimento automático.</p>
+          <code>CNPJ: 28.346.370/0001-02</code>
+        </div>
+      </div>
+      <div class="step-card">
+        <div class="step-num">03</div>
+        <div class="step-body">
+          <h3>Aba Serviço</h3>
+          <p>Informe a atividade:</p>
+          <code>02.01.01 — Serviços de pesquisas e desenvolvimento de qualquer natureza</code>
+          <p style="margin-top:8px;">Preencha obrigatoriamente a <strong>Descrição do Serviço</strong>.</p>
+        </div>
+      </div>
+      <div class="step-card">
+        <div class="step-num">04</div>
+        <div class="step-body">
+          <h3>Aba Valores</h3>
+          <p>Informe o valor do serviço prestado. As informações de tributação municipal (ISSQN) serão apuradas automaticamente pelo Simples Nacional.</p>
+        </div>
+      </div>
+      <div class="step-card">
+        <div class="step-num">05</div>
+        <div class="step-body">
+          <h3>Revisar e Emitir</h3>
+          <p>Confira todos os dados e clique em <strong>Emitir NFS-e</strong>. Sua nota estará pronta!</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="alert alert-danger">
+      <div class="alert-icon">🚨</div>
+      <div class="alert-content">
+        <strong>Atenção ao endereço</strong>
+        Se optar por informar endereço do tomador, verifique campos em branco e espaços extras — eles causam erro na emissão da nota.
+      </div>
+    </div>
+  </section>
+
+  <hr class="divider">
+
+  <!-- SEÇÃO 5 -->
+  <section class="section fade-in" id="mobile">
+    <div class="section-label">Etapa 05</div>
+    <h2>Emitindo pelo Celular</h2>
+    <p class="section-desc">Com o APP NFS-e Mobile, emitir sua nota fiscal é rápido e simples. Lembre-se: a configuração inicial no Emissor Web é pré-requisito obrigatório.</p>
+
+    <div class="mobile-steps">
+      <div class="mobile-step">
+        <div class="mobile-step-dot"></div>
+        <p><strong>Passo 1 —</strong> Baixe o aplicativo <strong>NFS-e Mobile</strong> na App Store (iOS) ou Google Play (Android).</p>
+      </div>
+      <div class="mobile-step">
+        <div class="mobile-step-dot"></div>
+        <p><strong>Passo 2 —</strong> Acesse com sua <strong>conta gov.br</strong> ou login e senha. Os serviços favoritos cadastrados no portal aparecem automaticamente.</p>
+      </div>
+      <div class="mobile-step">
+        <div class="mobile-step-dot"></div>
+        <p><strong>Passo 3 —</strong> Toque em <strong>Emitir NFS-e</strong>. O campo CPF/CNPJ do cliente é opcional.</p>
+      </div>
+      <div class="mobile-step">
+        <div class="mobile-step-dot"></div>
+        <p><strong>Passo 4 —</strong> Selecione o serviço prestado entre os favoritos cadastrados.</p>
+      </div>
+      <div class="mobile-step">
+        <div class="mobile-step-dot"></div>
+        <p><strong>Passo 5 —</strong> Preencha o <strong>valor do serviço</strong> e toque em Emitir NFS-e. Pronto!</p>
+      </div>
+      <div class="mobile-step">
+        <div class="mobile-step-dot"></div>
+        <p><strong>Passo 6 —</strong> Toque sobre a nota emitida para acessar o <strong>PDF</strong> e encaminhar ao cliente.</p>
+      </div>
+    </div>
+  </section>
+
+  <hr class="divider">
+
+  <!-- FAQ -->
+  <section class="section fade-in" id="faq">
+    <div class="section-label">Dúvidas Frequentes</div>
+    <h2>Ficou com dúvidas?</h2>
+    <p class="section-desc">Respostas para as perguntas mais comuns sobre a emissão de NFS-e.</p>
+
+    <div style="margin-top: 28px;">
+      <details class="faq-item">
+        <summary>Posso usar o APP sem configurar pelo portal web?</summary>
+        <div class="faq-body">Não. A configuração pelo Emissor Web é pré-requisito obrigatório para utilizar o APP NFS-e Mobile. Acesse primeiro o portal, preencha os dados e cadastre seus serviços favoritos.</div>
+      </details>
+      <details class="faq-item">
+        <summary>Qual a diferença entre Emissão Completa e Simplificada?</summary>
+        <div class="faq-body">A Emissão Completa é obrigatória para exportações e serviços onde o ISSQN é devido no local do tomador. Para emissão ao Zukkin, utilize sempre a <strong>Emissão Completa</strong>.</div>
+      </details>
+      <details class="faq-item">
+        <summary>Qual atividade devo selecionar?</summary>
+        <div class="faq-body">Selecione o código <strong>02.01.01 — Serviços de pesquisas e desenvolvimento de qualquer natureza</strong>, tanto no cadastro de Serviços Favoritos quanto na emissão pela opção Completa.</div>
+      </details>
+      <details class="faq-item">
+        <summary>Qual é a Data de Competência correta?</summary>
+        <div class="faq-body">A Data de Competência deve ser do <strong>mês anterior</strong> à emissão da nota. Ex.: se você está emitindo em março, informe fevereiro como competência.</div>
+      </details>
+      <details class="faq-item">
+        <summary>O que fazer se der erro ao emitir a nota?</summary>
+        <div class="faq-body">O erro mais comum é causado por espaços em branco ou extras no campo de endereço do tomador. Verifique se todos os campos obrigatórios estão preenchidos corretamente.</div>
+      </details>
+      <details class="faq-item">
+        <summary>Qual o nível necessário no gov.br para login?</summary>
+        <div class="faq-body">Para login via gov.br, o representante legal do MEI deve ter os selos <strong>Prata ou Ouro</strong> na sua conta gov.br.</div>
+      </details>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="footer-logo">Zukkin</div>
+  <p>Tutorial de Emissão de NFS-e — Emissor Web &amp; Mobile</p>
+  <p style="margin-top:8px;">Dúvidas? Acesse os vídeos tutoriais disponibilizados pela equipe <strong>Zukkin</strong>.</p>
+</footer>
+
+<script>
+  // Barra de progresso de leitura
+  window.addEventListener('scroll', () => {
+    const el = document.getElementById('progress-bar');
+    const scrolled = window.scrollY;
+    const total = document.body.scrollHeight - window.innerHeight;
+    el.style.width = (scrolled / total * 100) + '%';
+  });
+
+  // Fade-in ao scrollar
+  const faders = document.querySelectorAll('.fade-in');
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) { e.target.classList.add('visible'); observer.unobserve(e.target); }
+    });
+  }, { threshold: 0.08 });
+  faders.forEach(f => observer.observe(f));
+
+  // Tab ativa conforme seção visível
+  const sections = document.querySelectorAll('section[id]');
+  const tabs = document.querySelectorAll('.nav-tab');
+  window.addEventListener('scroll', () => {
+    let current = '';
+    sections.forEach(s => { if (window.scrollY >= s.offsetTop - 120) current = s.id; });
+    tabs.forEach(t => {
+      t.classList.remove('active');
+      if (t.getAttribute('href') === '#' + current) t.classList.add('active');
+    });
+  });
+</script>
+</body>
+</html>
